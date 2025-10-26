@@ -21,7 +21,7 @@ A uv run tool to generate interactive HTML reports from Snyk security issues CSV
 ```bash
 # Sync dependencies
 uv venv
-source .venv/bin/actiate
+source .venv/bin/activate
 uv sync
 ```
 
