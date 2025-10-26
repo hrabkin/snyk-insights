@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snyk Security Issues Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .severity-critical { color: #dc3545; }
+        .severity-high { color: #fd7e14; }
+        .severity-medium { color: #ffc107; }
+        .severity-low { color: #28a745; }
+
+        .accordion-container {
+            padding: 30px;
+        }
+
+        .accordion-item {
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background: linear-gradient(to right, #e9ecef, #dee2e6);
+        }
+
+        .accordion-header.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .accordion-title {
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .accordion-title h3 {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .accordion-title .subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .accordion-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .stat-badge {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .accordion-header.active .stat-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .chevron {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .chevron.active {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-content.active {
+            max-height: 2000px;
+        }
+
+        .accordion-body {
+            padding: 25px;
+            background: #f8f9fa;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-section h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .project-link {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .project-link:hover {
+            text-decoration: underline;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .badge-critical {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-high {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .badge-medium {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-low {
+            background: #28a745;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .filter-bar {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        .filter-button {
+            padding: 10px 20px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+
+        .filter-button:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-button.critical.active {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .filter-button.high.active {
+            background: #fd7e14;
+            border-color: #fd7e14;
+        }
+
+        .filter-button.medium.active {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+        .filter-button.low.active {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .accordion-item.hidden {
+            display: none;
+        }
+
+        .filter-count {
+            margin-left: auto;
+            padding: 8px 15px;
+            background: #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Snyk Security Issues Report - By Project</h1>
+            <p>Total Issues: {{ total_issues }} | Projects: {{ total_groups }}</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Critical</h3>
+                <div class="number severity-critical">{{ severity_counts.Critical | default(0) }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>High</h3>
+                <div class="number severity-high">{{ severity_counts.High | default(0) }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Medium</h3>
+                <div class="number severity-medium">{{ severity_counts.Medium | default(0) }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Low</h3>
+                <div class="number severity-low">{{ severity_counts.Low | default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <span class="filter-label">Filter by Severity:</span>
+            <button class="filter-button active" onclick="filterBySeverity('all')">All</button>
+            <button class="filter-button critical" onclick="filterBySeverity('Critical')">Critical</button>
+            <button class="filter-button high" onclick="filterBySeverity('High')">High</button>
+            <button class="filter-button medium" onclick="filterBySeverity('Medium')">Medium</button>
+            <button class="filter-button low" onclick="filterBySeverity('Low')">Low</button>
+            <span class="filter-count" id="filter-count">Showing {{ total_groups }} projects</span>
+        </div>
+
+        <div class="accordion-container">
+            {% for group in groups %}
+            <div class="accordion-item" data-severities="{{ group.severity_counts.keys()|list|join(',') }}" data-fixable="{{ group.fixable_count }}" data-total="{{ group.total_issues }}">
+                <div class="accordion-header" onclick="toggleAccordion({{ loop.index0 }})">
+                    <div class="accordion-title">
+                        <h3><a href="{{ group.project_url }}" target="_blank" style="color: inherit; text-decoration: none;">{{ group.project_name }}</a></h3>
+                        <div class="subtitle">
+                            {% for severity in ['Critical', 'High', 'Medium', 'Low'] %}
+                                {% if group.severity_counts.get(severity, 0) > 0 %}
+                                    <span class="severity-badge badge-{{ severity.lower() }}">{{ severity }}: {{ group.severity_counts.get(severity, 0) }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="accordion-stats">
+                        <span class="stat-badge">📊 {{ group.total_issues }} issues</span>
+                        <svg class="chevron" id="chevron-{{ loop.index0 }}" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="accordion-content" id="content-{{ loop.index0 }}">
+                    <div class="accordion-body">
+                        <div class="info-section">
+                            <h4>Problem Titles ({{ group.problem_titles | length }})</h4>
+                            <ul class="info-list">
+                                {% for title in group.problem_titles %}
+                                <li>{{ title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="info-section">
+                            <h4>CVE-CWE Pairs ({{ group.cve_cwe_pairs | length }})</h4>
+                            <ul class="info-list">
+                                {% for pair in group.cve_cwe_pairs %}
+                                <li>{{ pair }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            Generated by Snyk CSV Reader | Data from Snyk Security Platform
+        </div>
+    </div>
+
+    <script>
+        function toggleAccordion(index) {
+            const content = document.getElementById(`content-${index}`);
+            const header = content.previousElementSibling;
+            const chevron = document.getElementById(`chevron-${index}`);
+
+            const isActive = content.classList.contains('active');
+
+            // Close all accordions
+            document.querySelectorAll('.accordion-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.accordion-header').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.chevron').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Open clicked accordion if it wasn't active
+            if (!isActive) {
+                content.classList.add('active');
+                header.classList.add('active');
+                chevron.classList.add('active');
+            }
+        }
+
+        function filterBySeverity(severity) {
+            const items = document.querySelectorAll('.accordion-item');
+            const buttons = document.querySelectorAll('.filter-button');
+            let visibleCount = 0;
+
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            items.forEach(item => {
+                const severities = item.dataset.severities.split(',');
+                let shouldShow = false;
+
+                if (severity === 'all') {
+                    shouldShow = true;
+                } else {
+                    shouldShow = severities.includes(severity);
+                }
+
+                if (shouldShow) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                    // Close accordion if it's hidden
+                    const content = item.querySelector('.accordion-content');
+                    const header = item.querySelector('.accordion-header');
+                    const chevron = item.querySelector('.chevron');
+                    if (content) content.classList.remove('active');
+                    if (header) header.classList.remove('active');
+                    if (chevron) chevron.classList.remove('active');
+                }
+            });
+
+            // Update count
+            const countLabel = document.getElementById('filter-count');
+            countLabel.textContent = `Showing ${visibleCount} projects`;
+        }
+    </script>
+</body>
+</html>
