@@ -1,7 +1,7 @@
 [project]
 name = "snyk-insights"
 version = "0.1.0"
-description = "Read and analyze Snyk security issues CSV files"
+description = "Group fixable Snyk issues by CWE-CVE or ProjectName"
 requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.0.0",
